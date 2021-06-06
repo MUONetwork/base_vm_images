@@ -1,0 +1,62 @@
+---
+- hosts: all
+  become: yes
+  gather_facts: yes
+  vars:
+    - ansible_user: builder
+  vars_files:
+    - defaults/main.yml
+
+  pre_tasks:
+    - name: Downloading required roles
+      delegate_to: localhost
+      command: ansible-galaxy install -r requirements.yml
+      become: false
+
+  tasks:
+    - name: Setup NTP
+      include_role:
+        name: geerlingguy.ntp
+
+    - name: Set authorized keys
+      block:
+        - name: Adding /etc/ssh/authorized_keys as an additional file in AuthorizedKeysFile
+          lineinfile:
+            path: /etc/ssh/sshd_config
+            line: "AuthorizedKeysFile .ssh/authorized_keys /etc/ssh/authorized_keys"
+            create: yes
+
+        - name: Add ssh key for Administrator
+          authorized_key:
+            user: root
+            state: present
+            key: https://github.com/mohitsharma44.keys
+            path: /etc/ssh/authorized_keys
+            validate_certs: True
+            manage_dir: False
+
+    - name: Add dbus dependence to open-vm-tools.service
+      lineinfile:
+        path: /lib/systemd/system/open-vm-tools.service
+        insertafter: '\[Unit\]'
+        line: "After=dbus.service"
+        state: present
+      when: ansible_virtualization_type == "VMware"
+
+    - name: Installing packages
+      package:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - git
+
+    - name: Installing Docker and docker-compose
+      include_tasks: install-docker.yml
+      when: ansible_distribution|lower == 'ubuntu'
+
+  handlers:
+    - name: restart docker
+      service:
+        name: docker
+        state: restarted
+      when: ansible_distribution|lower == 'ubuntu'
