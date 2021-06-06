@@ -6,3 +6,12 @@ crash.log
 
 # For built boxes
 *.box
+
+# Editor specific ignores
+.idea/
+
+# packer variables containing password
+src/variables.json
+
+# Ansible specific
+.vault_password
