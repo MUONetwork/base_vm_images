@@ -7,13 +7,13 @@
       "password":                 "{{ user `proxmox_password` }}",
       "insecure_skip_tls_verify": "true",
 
-      "vm_name": "linux-mint-201-template",
-      "template_name": "linux-mint-201-template",
-      "template_description": "Linux Mint 20.1 Ulyssa - MATE (64-bit)",
+      "vm_name": "ubuntu-2004-template",
+      "template_name": "ubuntu-2004-template",
+      "template_description": "ubuntu 20.04 - legacy server (64-bit)",
       "node": "pve01",
-      "iso_file": "luna:iso/linuxmint-20.1-mate-64bit.iso",
+      "iso_file": "luna:iso/ubuntu-20.04.1-legacy-server-amd64.iso",
       "iso_storage_pool": "local",
-      "iso_checksum": "12ccfa2494acf761b2f5a3379ed770495d97051c3944571d5ad5e7c50d11c975",
+      "iso_checksum": "f11bda2f2caed8f420802b59f382c25160b114ccc665dbac9c5046e7fceaced2",
       "unmount_iso": true,
       "http_directory": "http",
       "http_interface": "utun4",
@@ -25,7 +25,7 @@
       "cores": 4,
       "sockets": 1,
       "cpu_type": "host",
-      "memory": 16384,
+      "memory": 8096,
 
       "network_adapters": [
         {
@@ -48,20 +48,34 @@
 
       "ssh_username": "{{ user `ssh_username` }}",
       "ssh_password": "{{ user `ssh_password` }}",
-      "ssh_timeout": "15m",
+      "ssh_timeout": "60m",
 
-      "boot_wait": "3s",
-      "boot_command" : [
-        "<esc><wait><tab><wait><leftCtrlOn>u<leftCtrlOff>",
-        "/casper/vmlinuz initrd=/casper/initrd.lz",
-        " url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/mint2001-preseed.cfg",
+      "boot_wait": "5s",
+      "boot_command": [
+        "<enter><wait><f6><wait><esc><wait>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs>",
+        "/install/vmlinuz",
+        " initrd=/install/initrd.gz",
+        " priority=critical",
+        " url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ubuntu.cfg",
+        " debian-installer=en_US locale=en_US kbd-chooser/method=us",
+        " console-setup/ask_detect=false keyboard-configuration/layoutcode=us",
+        " auto=true",
+        " hostname=ubuntu-server-2004",
         " automatic-ubiquity debug-ubiquity boot=casper nosplash noprompt",
         " passwd/user-fullname={{user `ssh_username`}}",
         " passwd/user-password={{user `ssh_password`}}",
         " passwd/user-password-again={{user `ssh_password`}}",
         " passwd/username={{user `ssh_username`}}",
-        " -- ",
-        "<wait><enter>"
+        " quiet --- <enter>"
       ]
     }
   ],
